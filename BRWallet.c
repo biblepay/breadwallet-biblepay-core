@@ -575,7 +575,10 @@ BRTransaction *BRWalletCreateTxForOutputs(BRWallet *wallet, const BRTxOutput out
 
     for (i = 0; outputs && i < outCount; i++) {
         assert(outputs[i].script != NULL && outputs[i].scriptLen > 0);
-        BRTransactionAddOutput(transaction, outputs[i].amount, outputs[i].script, outputs[i].scriptLen);
+        //BRTransactionAddOutput(transaction, outputs[i].amount, outputs[i].script, outputs[i].scriptLen);
+        const char *message = "<PACK><MT>MESSAGE</MT><MK>OUT_TX</MK><MV> </MV></PACK>";     // special for BBP wallet
+        BRTransactionAddOutputBBP(transaction, outputs[i].amount, outputs[i].script, outputs[i].scriptLen, message, sizeof(message));
+        
         amount += outputs[i].amount;
     }
     
@@ -647,7 +650,10 @@ BRTransaction *BRWalletCreateTxForOutputs(BRWallet *wallet, const BRTxOutput out
         uint8_t script[BRAddressScriptPubKey(NULL, 0, addr.s)];
         size_t scriptLen = BRAddressScriptPubKey(script, sizeof(script), addr.s);
     
-        BRTransactionAddOutput(transaction, balance - (amount + feeAmount), script, scriptLen);
+        //BRTransactionAddOutput(transaction, balance - (amount + feeAmount), script, scriptLen);
+        const char *message = "<change>1</change>";     // special for BBP wallet
+        BRTransactionAddOutputBBP(transaction, balance - (amount + feeAmount), script, scriptLen, message, sizeof(message) );
+        
         BRTransactionShuffleOutputs(transaction);
     }
     

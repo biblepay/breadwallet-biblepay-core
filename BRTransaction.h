@@ -34,7 +34,7 @@
 extern "C" {
 #endif
 
-#define TX_FEE_PER_KB        1000ULL     // standard tx fee per kb of tx size, rounded up to nearest kb
+#define TX_FEE_PER_KB        10000ULL     // BBP is 10000, standard tx fee per kb of tx size, rounded up to nearest kb
 #define TX_OUTPUT_SIZE       34          // estimated size for a typical transaction output
 #define TX_INPUT_SIZE        148         // estimated size for a typical compact pubkey transaction input
 #define TX_MIN_OUTPUT_AMOUNT (TX_FEE_PER_KB*3*(TX_OUTPUT_SIZE + TX_INPUT_SIZE)/1000) //no txout can be below this amount
@@ -75,6 +75,8 @@ typedef struct {
     uint64_t amount;
     uint8_t *script;
     size_t scriptLen;
+    char *message;
+    size_t messageLen;
 } BRTxOutput;
 
 #define BR_TX_OUTPUT_NONE ((BRTxOutput) { "", 0, NULL, 0 })
@@ -114,6 +116,9 @@ void BRTransactionAddInput(BRTransaction *tx, UInt256 txHash, uint32_t index, ui
 // adds an output to tx
 void BRTransactionAddOutput(BRTransaction *tx, uint64_t amount, const uint8_t *script, size_t scriptLen);
 
+// adds an output to tx +message string (BBP protocol extension)
+void BRTransactionAddOutputBBP(BRTransaction *tx, uint64_t amount, const uint8_t *script, size_t scriptLen, const char *message, size_t messageLen);
+        
 // shuffles order of tx outputs
 void BRTransactionShuffleOutputs(BRTransaction *tx);
 

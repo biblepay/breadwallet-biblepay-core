@@ -18,5 +18,18 @@ module BRCore [system] [extern_c] {
     header "BRAddress.h"
     header "BRWallet.h"
     header "BRPeerManager.h"
+    header "x11.h"
+    header "sha3/sph_blake.h"
+    header "sha3/sph_bmw.h"
+    header "sha3/sph_cubehash.h"
+    header "sha3/sph_echo.h"
+    header "sha3/sph_groestl.h"
+    header "sha3/sph_jh.h"
+    header "sha3/sph_keccak.h"
+    header "sha3/sph_luffa.h"
+    header "sha3/sph_shavite.h"
+    header "sha3/sph_simd.h"
+    header "sha3/sph_skein.h"
+    header "sha3/sph_types.h"
     export *
 }
