@@ -1132,7 +1132,9 @@ static int _BRPeerManagerVerifyBlock(BRPeerManager *manager, BRMerkleBlock *bloc
 {
     uint32_t transitionTime = 0;
     int r = 1;
-    
+
+    // Dynamic difficulty intervals in BBP...
+/*    
     // check if we hit a difficulty transition, and find previous transition time
     if ((block->height % BLOCK_DIFFICULTY_INTERVAL) == 0) {
         BRMerkleBlock *b = block;
@@ -1162,7 +1164,7 @@ static int _BRPeerManagerVerifyBlock(BRPeerManager *manager, BRMerkleBlock *bloc
             }
         }
     }
-
+*/
     // verify block difficulty
     if (r && ! BRMerkleBlockVerifyDifficulty(block, prev, transitionTime)) {
         peer_log(peer, "relayed block with invalid difficulty target %x, blockHash: %s", block->target,
