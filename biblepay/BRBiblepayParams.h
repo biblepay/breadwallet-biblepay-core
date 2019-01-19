@@ -34,7 +34,8 @@
 #define BBP_BLOCK_DIFFICULTY_INTERVAL (NPOW_TARGET_TIMESPAN/NPOW_TARGEY_SPACING)
 
 static const char *BRBiblepayDNSSeeds[] = {
-    "dnsseed.biblepay.org", "node.biblepay.org", "dnsseed.biblepay-explorer.org", NULL
+    "dnsseed.biblepay.org", "node.biblepay.org", "dnsseed.biblepay-explorer.org",
+    "209.250.243.91", "8.6.193.83", "207.246.75.36", "95.179.142.169", "45.77.94.139", "45.77.141.96", NULL
 };
 
 static const char *BRBiblepayTestNetDNSSeeds[] = {
@@ -56,7 +57,8 @@ static const BRCheckPoint BRBiblepayCheckpoints[] = {
     {  21650, uint256("756e18f6a20d02d7af0a32c5705960d58adc4daba24c6a7dd9a8b80776bcca73"), 1513595068, 0x1c028131 },
     {  21960, uint256("dd7e0acd7b9569b6fbf84a8262bb5fe3ea28af259f12d060acbcd62d4241fb51"), 1513776131, 0x1c00f22d },
     {  32500, uint256("acb4534f70da9624fee2b9032d2fe47fe6d7d3e8cffdbfbca4d0a3a63394045a"), 1519902767, 0x1b1af846 },
-    {  33460, uint256("e64ff92ae97c2978c14d97ae45c618c1f2140339ce9ccb770945d3efb7d5e0f5"), 1520469785, 0x1c4c0e1b }
+    {  33460, uint256("e64ff92ae97c2978c14d97ae45c618c1f2140339ce9ccb770945d3efb7d5e0f5"), 1520469785, 0x1c4c0e1b },
+    {  63000, uint256("1ef6f6e5d803cf04f84a4377365db6cefe82a775a9a596029db7d23fa3652f57"), 1533611315, 0x1c00eaad }
 };
 
 static int BRBiblepayVerifyDifficulty(const BRMerkleBlock *block, const BRSet *blockSet)
