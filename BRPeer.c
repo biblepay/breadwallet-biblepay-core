@@ -47,7 +47,7 @@
 #define MAX_MSG_LENGTH     0x02000000
 #define MAX_GETDATA_HASHES 50000
 #define ENABLED_SERVICES   0ULL  // we don't provide full blocks to remote nodes
-#define PROTOCOL_VERSION   70717    // bitcoin=70013
+#define PROTOCOL_VERSION   70732    // bitcoin=70013
 #define MIN_PROTO_VERSION  70717 // peers earlier than this protocol version not supported (need v0.9 txFee relay rules)
 #define LOCAL_HOST         ((UInt128) { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xff, 0xff, 0x7f, 0x00, 0x00, 0x01 })
 #define CONNECT_TIMEOUT    3.0
@@ -763,7 +763,7 @@ static int _BRPeerAcceptRejectMessage(BRPeer *peer, const uint8_t *msg, size_t m
         code = msg[off++];
         strLen = (size_t)BRVarInt(&msg[off], (off <= msgLen ? msgLen - off : 0), &len);
         off += len;
-        if (strncmp(type, MSG_TX, sizeof(type)) == 0) hashLen = 0; //sizeof(UInt256);
+        if (strncmp(type, MSG_TX, sizeof(type)) == 0) hashLen = 0; //sizeof(UInt256); Hash is empty in BBP
         
         if (off + strLen + hashLen > msgLen) {
             peer_log(peer, "malformed reject message, length is %zu, should be >= %zu", msgLen, off + strLen + hashLen);
