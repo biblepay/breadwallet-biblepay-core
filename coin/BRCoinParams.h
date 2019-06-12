@@ -34,7 +34,7 @@
 #define BBP_BLOCK_DIFFICULTY_INTERVAL (NPOW_TARGET_TIMESPAN/NPOW_TARGEY_SPACING)
 
 static const char *BRCoinDNSSeeds[] = {
-    "dnsseed.biblepay.org", "node.biblepay.org", "dnsseed.biblepay-explorer.org", NULL
+    "dns1.biblepay.org", "dns2.biblepay.org","dnsseed.biblepay.org", NULL
 };
 
 static const char *BRCoinTestNetDNSSeeds[] = {
