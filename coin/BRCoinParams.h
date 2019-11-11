@@ -36,7 +36,7 @@
 static const char *BRCoinDNSSeeds[] = {
     "dns1.biblepay.org", "dns2.biblepay.org",
     "dnsseed.biblepay.org", "node.biblepay.org",
-    "209.250.243.91", "8.6.193.83", "207.246.75.36", "95.179.142.169", "45.77.94.139", "45.77.141.96"
+    "167.86.74.98"
     , NULL
 };
 
