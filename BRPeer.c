@@ -47,8 +47,8 @@
 #define MAX_MSG_LENGTH     0x02000000
 #define MAX_GETDATA_HASHES 50000
 #define ENABLED_SERVICES   0ULL  // we don't provide full blocks to remote nodes
-#define PROTOCOL_VERSION   70737    // bitcoin=70013
-#define MIN_PROTO_VERSION  70737 // peers earlier than this protocol version not supported (need v0.9 txFee relay rules)
+#define PROTOCOL_VERSION   70750    // bitcoin=70013
+#define MIN_PROTO_VERSION  70750 // peers earlier than this protocol version not supported (need v0.9 txFee relay rules)
 #define LOCAL_HOST         ((UInt128) { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xff, 0xff, 0x7f, 0x00, 0x00, 0x01 })
 #define CONNECT_TIMEOUT    3.0
 #define MESSAGE_TIMEOUT    10.0
@@ -954,7 +954,7 @@ static void *_peerThreadRoutine(void *arg)
                     ctx->mempoolCallback = NULL;
                     ctx->mempoolTime = DBL_MAX;
                 }
-                
+
                 while (sizeof(uint32_t) <= len && UInt32GetLE(header) != ctx->magicNumber) {
                     memmove(header, &header[1], --len); // consume one byte at a time until we find the magic number
                 }
@@ -966,8 +966,10 @@ static void *_peerThreadRoutine(void *arg)
                 peer_log(peer, "%s", strerror(error));
             }
             else if (header[15] != 0) { // verify header type field is NULL terminated
-                peer_log(peer, "malformed message header: type not NULL terminated");
-                error = EPROTO;
+                if (header[17] != 0)   { // ignore qsendrecsigs message error
+                    peer_log(peer, "malformed message header: type not NULL terminated");
+                    error = EPROTO;
+                }
             }
             else if (len == HEADER_LENGTH) {
                 const char *type = (const char *)(&header[4]);
