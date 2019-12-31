@@ -863,6 +863,7 @@ int BRWalletTransactionIsValid(BRWallet *wallet, const BRTransaction *tx)
         pthread_mutex_unlock(&wallet->lock);
 
         for (size_t i = 0; r && i < tx->inCount; i++) {
+            //wallet_log("BRWalletTransactionForHash tx: %s", u256hex(tx->txHash));
             t = BRWalletTransactionForHash(wallet, tx->inputs[i].txHash);
             if (t && ! BRWalletTransactionIsValid(wallet, t)) r = 0;
         }

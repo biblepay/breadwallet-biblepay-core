@@ -35,6 +35,17 @@
 extern "C" {
 #endif
 
+#if defined(TARGET_OS_MAC)
+#include <Foundation/Foundation.h>
+#define wallet_log(...) NSLog(__VA_ARGS__)
+#elif defined(__ANDROID__)
+#include <android/log.h>
+#define wallet_log(...) __android_log_print(ANDROID_LOG_INFO, "BRWallet", __VA_ARGS__)
+#else
+#include <stdio.h>
+#define wallet_log(...) printf(__VA_ARGS__)
+#endif
+
 #define DEFAULT_FEE_PER_KB ((5000ULL*1000 + 99)/100) // bitcoind 0.11 min relay fee on 100bytes
 #define MIN_FEE_PER_KB     ((TX_FEE_PER_KB*1000 + 190)/191) // minimum relay fee on a 191byte tx
 #define MAX_FEE_PER_KB     ((1000100ULL*1000 + 190)/191) // slightly higher than a 10000bit fee on a 191byte tx

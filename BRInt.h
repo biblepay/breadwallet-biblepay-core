@@ -110,6 +110,8 @@ inline static UInt256 UInt256Reverse(UInt256 u)
                                 u.u8[ 7], u.u8[ 6], u.u8[5],  u.u8[ 4], u.u8[ 3], u.u8[ 2], u.u8[ 1], u.u8[ 0] } });
 }
 
+#define u256hexBE(u) u256hex(UInt256Reverse(u))
+
 #define UINT128_ZERO ((UInt128) { .u64 = { 0, 0 } })
 #define UINT160_ZERO ((UInt160) { .u32 = { 0, 0, 0, 0, 0 } })
 #define UINT256_ZERO ((UInt256) { .u64 = { 0, 0, 0, 0 } })
