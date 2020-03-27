@@ -51,6 +51,9 @@ typedef struct {
     uint8_t *flags;
     size_t flagsLen;
     uint32_t height;
+    UInt256 RandomXKey;
+    char *RandomXData;
+    size_t RandomXDataLen;
 } BRMerkleBlock;
 
 #define BR_MERKLE_BLOCK_NONE\
