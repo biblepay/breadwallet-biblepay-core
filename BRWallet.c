@@ -831,7 +831,8 @@ BRTransaction *BRWalletTransactionForHash(BRWallet *wallet, UInt256 txHash)
     BRTransaction *tx;
     
     assert(wallet != NULL);
-    assert(! UInt256IsZero(txHash));
+    //assert(! UInt256IsZero(txHash));
+    if (UInt256IsZero(txHash))  return NULL;
     pthread_mutex_lock(&wallet->lock);
     tx = BRSetGet(wallet->allTx, &txHash);
     pthread_mutex_unlock(&wallet->lock);
@@ -863,7 +864,7 @@ int BRWalletTransactionIsValid(BRWallet *wallet, const BRTransaction *tx)
         pthread_mutex_unlock(&wallet->lock);
 
         for (size_t i = 0; r && i < tx->inCount; i++) {
-            //wallet_log("BRWalletTransactionForHash tx: %s", u256hex(tx->txHash));
+            wallet_log("BRWalletTransactionForHash tx: %s", UInt256Reverse(tx->txHash));
             t = BRWalletTransactionForHash(wallet, tx->inputs[i].txHash);
             if (t && ! BRWalletTransactionIsValid(wallet, t)) r = 0;
         }

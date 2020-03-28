@@ -120,6 +120,18 @@ BRMerkleBlock *BRMerkleBlockParse(const uint8_t *buf, size_t bufLen)
         block->nonce = UInt32GetLE(&buf[off]);
         off += sizeof(uint32_t);
         
+        if (block->version >= 0x50000000UL && block->version < 0x60000000UL)
+        {
+            block->RandomXKey = UInt256Get(&buf[off]);
+            off += sizeof(UInt256);
+            block->RandomXDataLen = (size_t)BRVarInt(&buf[off], (off <= bufLen ? bufLen - off : 0), &len);
+            off += len;
+            len = block->RandomXDataLen*sizeof(char);
+            block->RandomXData = (off + len <= bufLen) ? malloc(len) : NULL;
+            if (block->RandomXData) memcpy(block->RandomXData, &buf[off], len);
+            off += len;
+        }
+        
         if (off + sizeof(uint32_t) <= bufLen) {
             block->totalTx = UInt32GetLE(&buf[off]);
             off += sizeof(uint32_t);
@@ -374,5 +386,6 @@ void BRMerkleBlockFree(BRMerkleBlock *block)
     
     if (block->hashes) free(block->hashes);
     if (block->flags) free(block->flags);
+    if (block->RandomXData) free(block->RandomXData);
     free(block);
 }

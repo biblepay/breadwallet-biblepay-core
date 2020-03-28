@@ -318,7 +318,7 @@ static void _BRPeerManagerLoadBloomFilter(BRPeerManager *manager, BRPeer *peer)
     free(utxos);
         
     for (size_t i = 0; i < txCount; i++) { // also add TXOs spent within the last 100 blocks
-        //peer_log(peer, "BRWalletTransactionForHash tx: %s", u256hex(transactions[i]->txHash));
+        peer_log(peer, "BRWalletTransactionForHash tx: %s", UInt256Reverse(transactions[i]->txHash));
         for (size_t j = 0; j < transactions[i]->inCount; j++) {
             BRTxInput *input = &transactions[i]->inputs[j];
             BRTransaction *tx = BRWalletTransactionForHash(manager->wallet, input->txHash);

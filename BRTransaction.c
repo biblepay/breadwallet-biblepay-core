@@ -468,11 +468,11 @@ void BRTransactionAddInput(BRTransaction *tx, UInt256 txHash, uint32_t index, ui
     BRTxInput input = { txHash, index, "", amount, NULL, 0, NULL, 0, sequence };
 
     assert(tx != NULL);
-    assert(! UInt256IsZero(txHash));
+    //assert(!UInt256IsZero(txHash));
     assert(script != NULL || scriptLen == 0);
     assert(signature != NULL || sigLen == 0);
     
-    if (tx) {
+    if (tx && !UInt256IsZero(txHash)) {
         if (script) BRTxInputSetScript(&input, script, scriptLen);
         if (signature) BRTxInputSetSignature(&input, signature, sigLen);
         array_add(tx->inputs, input);
