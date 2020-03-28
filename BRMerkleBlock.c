@@ -421,5 +421,6 @@ void BRMerkleBlockFree(BRMerkleBlock *block)
     
     if (block->hashes) free(block->hashes);
     if (block->flags) free(block->flags);
+    if (block->RandomXKey) free(block->RandomXKey);
     free(block);
 }
