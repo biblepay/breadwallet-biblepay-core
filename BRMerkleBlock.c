@@ -127,8 +127,11 @@ BRMerkleBlock *BRMerkleBlockParse(const uint8_t *buf, size_t bufLen)
             block->RandomXDataLen = (size_t)BRVarInt(&buf[off], (off <= bufLen ? bufLen - off : 0), &len);
             off += len;
             len = block->RandomXDataLen*sizeof(char);
-            block->RandomXData = (off + len <= bufLen) ? malloc(len) : NULL;
-            if (block->RandomXData) memcpy(block->RandomXData, &buf[off], len);
+            block->RandomXData = (off + len <= bufLen) ? malloc(len + 1) : NULL;    // len+1 for string terminator
+            if (block->RandomXData) {
+                memcpy(block->RandomXData, &buf[off], len);
+                block->RandomXData[len] = '\0';     // string terminator
+            }
             off += len;
         }
         
@@ -168,6 +171,11 @@ size_t BRMerkleBlockSerialize(const BRMerkleBlock *block, uint8_t *buf, size_t b
                BRVarIntSize(block->flagsLen) + block->flagsLen;
     }
     
+    if (block->version >= 0x50000000UL && block->version < 0x60000000UL) {
+        len += sizeof(UInt256) + BRVarIntSize(block->RandomXDataLen) +
+               block->RandomXDataLen * sizeof(char);
+    }
+
     if (buf && len <= bufLen) {
         UInt32SetLE(&buf[off], block->version);
         off += sizeof(uint32_t);
@@ -182,6 +190,15 @@ size_t BRMerkleBlockSerialize(const BRMerkleBlock *block, uint8_t *buf, size_t b
         UInt32SetLE(&buf[off], block->nonce);
         off += sizeof(uint32_t);
     
+        if (block->version >= 0x50000000UL && block->version < 0x60000000UL)
+        {
+            UInt256Set(&buf[off], block->RandomXKey);
+            off += sizeof(UInt256);
+            off += BRVarIntSet(&buf[off], (off <= bufLen ? bufLen - off : 0), block->RandomXDataLen);
+            if (block->RandomXData) memcpy(&buf[off], block->RandomXData, block->RandomXDataLen);
+            off += block->RandomXDataLen;
+        }
+
         if (block->totalTx > 0) {
             UInt32SetLE(&buf[off], block->totalTx);
             off += sizeof(uint32_t);
@@ -386,6 +403,7 @@ void BRMerkleBlockFree(BRMerkleBlock *block)
     
     if (block->hashes) free(block->hashes);
     if (block->flags) free(block->flags);
-    if (block->RandomXData) free(block->RandomXData);
+    if (block->RandomXData && block->RandomXData[0]=='<') free(block->RandomXData);
+
     free(block);
 }
