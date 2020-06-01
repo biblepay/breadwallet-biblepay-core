@@ -31,6 +31,7 @@
 #include <limits.h>
 #include <string.h>
 #include <assert.h>
+#include <signal.h>
 
 #define MAX_PROOF_OF_WORK 0x207fffff        // BTC = 0x1d00ffff    highest value for difficulty target (higher values are less difficult)
 #define TARGET_TIMESPAN   (24*60*60)       // BBP=1 day. Bitcoin=(14*24*60*60) the targeted timespan between difficulty target adjustments
@@ -138,8 +139,11 @@ BRMerkleBlock *BRMerkleBlockParse(const uint8_t *buf, size_t bufLen)
             block->RandomXDataLen = (size_t)BRVarInt(&buf[off], (off <= bufLen ? bufLen - off : 0), &len);
             off += len;
             len = block->RandomXDataLen*sizeof(char);
-            block->RandomXData = (off + len <= bufLen) ? malloc(len) : NULL;
-            if (block->RandomXData) memcpy(block->RandomXData, &buf[off], len);
+            block->RandomXData = (off + len <= bufLen) ? malloc(len + 1) : NULL;    // len+1 for string terminator
+            if (block->RandomXData) {
+                memcpy(block->RandomXData, &buf[off], len);
+                block->RandomXData[len] = '\0';     // string terminator
+            }
             off += len;
         }
 
@@ -178,7 +182,12 @@ size_t BRMerkleBlockSerialize(const BRMerkleBlock *block, uint8_t *buf, size_t b
         len += sizeof(uint32_t) + BRVarIntSize(block->hashesCount) + block->hashesCount*sizeof(UInt256) +
                BRVarIntSize(block->flagsLen) + block->flagsLen;
     }
-    
+
+    if (block->version >= 0x50000000UL && block->version < 0x60000000UL) {
+        len += sizeof(UInt256) + BRVarIntSize(block->RandomXDataLen) +
+               block->RandomXDataLen * sizeof(char);
+    }
+
     if (buf && len <= bufLen) {
         UInt32SetLE(&buf[off], block->version);
         off += sizeof(uint32_t);
@@ -192,6 +201,15 @@ size_t BRMerkleBlockSerialize(const BRMerkleBlock *block, uint8_t *buf, size_t b
         off += sizeof(uint32_t);
         UInt32SetLE(&buf[off], block->nonce);
         off += sizeof(uint32_t);
+
+        if (block->version >= 0x50000000UL && block->version < 0x60000000UL)
+        {
+            UInt256Set(&buf[off], block->RandomXKey);
+            off += sizeof(UInt256);
+            off += BRVarIntSet(&buf[off], (off <= bufLen ? bufLen - off : 0), block->RandomXDataLen);
+            if (block->RandomXData) memcpy(&buf[off], block->RandomXData, block->RandomXDataLen);
+            off += block->RandomXDataLen;
+        }
 
         if (block->totalTx > 0) {
             UInt32SetLE(&buf[off], block->totalTx);
@@ -418,9 +436,19 @@ int BRMerkleBlockVerifyDifficulty(const BRMerkleBlock *block, const BRMerkleBloc
 void BRMerkleBlockFree(BRMerkleBlock *block)
 {
     assert(block != NULL);
-    
+
+    struct sigaction action;
+    memset(&action, 0, sizeof(struct sigaction));
+    action.sa_flags = SA_SIGINFO;
+    action.sa_sigaction = shandler;
+    sigaction(SIGSEGV, &action, NULL);
+
     if (block->hashes) free(block->hashes);
     if (block->flags) free(block->flags);
-    if (block->RandomXKey) free(block->RandomXKey);
+    if (block->RandomXData && block->RandomXData[0]=='<') free(block->RandomXData);
     free(block);
+}
+
+void shandler(unsigned int *nSignum) {
+    // do nothing ATM
 }

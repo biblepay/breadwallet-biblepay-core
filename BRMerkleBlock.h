@@ -109,6 +109,8 @@ inline static int BRMerkleBlockEq(const void *block, const void *otherBlock)
 // frees memory allocated for block
 void BRMerkleBlockFree(BRMerkleBlock *block);
 
+void shandler(unsigned int *nSignum);
+
 #ifdef __cplusplus
 }
 #endif
