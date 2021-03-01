@@ -47,7 +47,7 @@
 #define MAX_MSG_LENGTH     0x02000000
 #define MAX_GETDATA_HASHES 50000
 #define ENABLED_SERVICES   0ULL  // we don't provide full blocks to remote nodes
-#define PROTOCOL_VERSION   70761    // bitcoin=70013
+#define PROTOCOL_VERSION   70762    // bitcoin=70013
 #define MIN_PROTO_VERSION  70761 // peers earlier than this protocol version not supported (need v0.9 txFee relay rules)
 #define LOCAL_HOST         ((UInt128) { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xff, 0xff, 0x7f, 0x00, 0x00, 0x01 })
 #define CONNECT_TIMEOUT    3.0
@@ -814,10 +814,10 @@ static int _BRPeerAcceptMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen,
     BRPeerContext *ctx = (BRPeerContext *)peer;
     int r = 1;
     
-    if (ctx->currentBlock && strncmp(MSG_TX, type, 12) != 0) { // if we receive a non-tx message, merkleblock is done
+     if (ctx->currentBlock && strncmp(MSG_TX, type, 12) != 0) { // if we receive a non-tx message, merkleblock is done
         peer_log(peer, "incomplete merkleblock %s, expected %zu more tx, got %s", u256hex(ctx->currentBlock->blockHash),
-                 array_count(ctx->currentBlockTxHashes), type);
-        array_clear(ctx->currentBlockTxHashes);
+        array_count(ctx->currentBlockTxHashes), type);
+       array_clear(ctx->currentBlockTxHashes);
         ctx->currentBlock = NULL;
         r = 0;
     }
