@@ -102,6 +102,7 @@ BRMerkleBlock *BRMerkleBlockCopy(const BRMerkleBlock *block)
     BRMerkleBlock *cpy = BRMerkleBlockNew();
 
     assert(block != NULL);
+    //assert( 1 != 0 );
     *cpy = *block;
     cpy->hashes = NULL;
     cpy->flags = NULL;
