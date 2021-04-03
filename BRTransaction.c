@@ -182,6 +182,21 @@ void BRTxOutputSetMessage(BRTxOutput *output, const char *message, size_t messag
     }
 }
 
+// Dash protocol
+void BRTxSetExtraPayload(BRTransaction *tx, const char *extraPayload, size_t extraPayloadLen)
+{
+    assert(tx != NULL);
+    if (tx->extraPayload) array_free(tx->extraPayload);
+    tx->extraPayload = NULL;
+    tx->extraPayloadLen = 0;
+
+    if (extraPayload) {
+        tx->extraPayloadLen = extraPayloadLen;
+        array_new(tx->extraPayload, extraPayloadLen);
+        array_add_array(tx->extraPayload, extraPayload, extraPayloadLen);
+    }
+}
+
 static size_t _BRTransactionOutputData(const BRTransaction *tx, uint8_t *data, size_t dataLen, size_t index)
 {
     BRTxOutput *output;
@@ -394,9 +409,11 @@ BRTransaction *BRTransactionParse(const uint8_t *buf, size_t bufLen)
     BRTransaction *tx = BRTransactionNew();
     BRTxInput *input;
     BRTxOutput *output;
-    
-    tx->version = (off + sizeof(uint32_t) <= bufLen) ? UInt32GetLE(&buf[off]) : 0;
+
+    uint32_t n32bitVersion = (off + sizeof(uint32_t) <= bufLen) ? UInt32GetLE(&buf[off]) : 0;
     off += sizeof(uint32_t);
+    tx->version = (int16_t) (n32bitVersion & 0xffff);
+    tx->type = (int16_t) ((n32bitVersion >> 16) & 0xffff);
     tx->inCount = (size_t)BRVarInt(&buf[off], (off <= bufLen ? bufLen - off : 0), &len);
     off += len;
     array_set_count(tx->inputs, tx->inCount);
@@ -444,8 +461,18 @@ BRTransaction *BRTransactionParse(const uint8_t *buf, size_t bufLen)
     
     tx->lockTime = (off + sizeof(uint32_t) <= bufLen) ? UInt32GetLE(&buf[off]) : 0;
     off += sizeof(uint32_t);
-    
-    if (tx->inCount == 0 || off > bufLen) {
+
+    // Dash special transaction types
+    if (tx->version == 3 && tx->type != TRANSACTION_NORMAL) {
+        sLen = (size_t) BRVarInt(&buf[off], (off <= bufLen ? bufLen - off : 0), &len);
+        if (sLen>0) {
+            off += len;
+            if (off + sLen <= bufLen) BRTxSetExtraPayload(tx, &buf[off], sLen);
+            off += sLen;
+        }
+    }
+
+    if ( tx->inCount == 0 || off > bufLen) {
         BRTransactionFree(tx);
         tx = NULL;
     }
@@ -480,7 +507,7 @@ void BRTransactionAddInput(BRTransaction *tx, UInt256 txHash, uint32_t index, ui
     BRTxInput input = { txHash, index, "", amount, NULL, 0, NULL, 0, sequence };
 
     // allow coinbase inputs
-    /*sssss
+    /*
     assert(tx != NULL);
     assert(! UInt256IsZero(txHash));
     assert(script != NULL || scriptLen == 0);
