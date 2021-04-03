@@ -809,10 +809,12 @@ void BRWalletRemoveTransaction(BRWallet *wallet, UInt256 txHash)
                 recommendRescan = notifyUser = 1;
                 
                 for (size_t i = 0; i < tx->inCount; i++) { // only recommend a rescan if all inputs are confirmed
-                    t = BRWalletTransactionForHash(wallet, tx->inputs[i].txHash);
-                    if (t && t->blockHeight != TX_UNCONFIRMED) continue;
-                    recommendRescan = 0;
-                    break;
+                    if (!UInt256IsZero(tx->inputs[i].txHash)) {    // skip coinbase inputs
+                        t = BRWalletTransactionForHash(wallet, tx->inputs[i].txHash);
+                        if (t && t->blockHeight != TX_UNCONFIRMED) continue;
+                        recommendRescan = 0;
+                        break;
+                    }
                 }
             }
 
@@ -864,9 +866,10 @@ int BRWalletTransactionIsValid(BRWallet *wallet, const BRTransaction *tx)
         pthread_mutex_unlock(&wallet->lock);
 
         for (size_t i = 0; r && i < tx->inCount; i++) {
-            wallet_log("BRWalletTransactionForHash tx: %s", UInt256Reverse(tx->txHash));
-            t = BRWalletTransactionForHash(wallet, tx->inputs[i].txHash);
-            if (t && ! BRWalletTransactionIsValid(wallet, t)) r = 0;
+            if (!UInt256IsZero(tx->inputs[i].txHash)) {    // skip coinbase inputs
+                t = BRWalletTransactionForHash(wallet, tx->inputs[i].txHash);
+                if (t && ! BRWalletTransactionIsValid(wallet, t)) r = 0;
+            }
         }
     }
     
@@ -902,8 +905,10 @@ int BRWalletTransactionIsPending(BRWallet *wallet, const BRTransaction *tx)
         }
         
         for (size_t i = 0; ! r && i < tx->inCount; i++) { // check if any inputs are known to be pending
-            t = BRWalletTransactionForHash(wallet, tx->inputs[i].txHash);
-            if (t && BRWalletTransactionIsPending(wallet, t)) r = 1;
+            if (!UInt256IsZero(tx->inputs[i].txHash)) {    // skip coinbase inputs
+                t = BRWalletTransactionForHash(wallet, tx->inputs[i].txHash);
+                if (t && BRWalletTransactionIsPending(wallet, t)) r = 1;
+            }
         }
     }
     
@@ -924,8 +929,10 @@ int BRWalletTransactionIsVerified(BRWallet *wallet, const BRTransaction *tx)
             BRWalletTransactionIsPending(wallet, tx)) r = 0;
             
         for (size_t i = 0; r && i < tx->inCount; i++) { // check if any inputs are known to be unverified
-            t = BRWalletTransactionForHash(wallet, tx->inputs[i].txHash);
-            if (t && ! BRWalletTransactionIsVerified(wallet, t)) r = 0;
+            if (!UInt256IsZero(tx->inputs[i].txHash)) {    // skip coinbase inputs
+                t = BRWalletTransactionForHash(wallet, tx->inputs[i].txHash);
+                if (t && ! BRWalletTransactionIsVerified(wallet, t)) r = 0;
+            }
         }
     }
     

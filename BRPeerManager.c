@@ -232,8 +232,10 @@ static void _BRPeerManagerAddTxToPublishList(BRPeerManager *manager, BRTransacti
         array_add(manager->publishedTxHashes, tx->txHash);
 
         for (size_t i = 0; i < tx->inCount; i++) {
-            _BRPeerManagerAddTxToPublishList(manager, BRWalletTransactionForHash(manager->wallet, tx->inputs[i].txHash),
+            if (!UInt256IsZero(tx->inputs[i].txHash)) {     // skip coinbase inputs
+                _BRPeerManagerAddTxToPublishList(manager, BRWalletTransactionForHash(manager->wallet, tx->inputs[i].txHash),
                                              NULL, NULL);
+            }
         }
     }
 }
@@ -318,10 +320,13 @@ static void _BRPeerManagerLoadBloomFilter(BRPeerManager *manager, BRPeer *peer)
     free(utxos);
         
     for (size_t i = 0; i < txCount; i++) { // also add TXOs spent within the last 100 blocks
-        peer_log(peer, "BRWalletTransactionForHash tx: %s", UInt256Reverse(transactions[i]->txHash));
+        peer_log(peer, "BRWalletTransactionForHash1 tx: %s", UInt256Reverse(transactions[i]->txHash));
         for (size_t j = 0; j < transactions[i]->inCount; j++) {
             BRTxInput *input = &transactions[i]->inputs[j];
-            BRTransaction *tx = BRWalletTransactionForHash(manager->wallet, input->txHash);
+            BRTransaction *tx = NULL;
+            if (!UInt256IsZero(input->txHash)) {    // skip coinbase inputs
+                tx = BRWalletTransactionForHash(manager->wallet, input->txHash);
+            }
             uint8_t o[sizeof(UInt256) + sizeof(uint32_t)];
             
             if (tx && input->index < tx->outCount &&
@@ -1071,10 +1076,12 @@ static void _peerRejectedTx(void *info, UInt256 txHash, uint8_t code)
         // if we get rejected for any reason other than double-spend, the peer is likely misconfigured
         if (code != REJECT_SPENT && BRWalletAmountSentByTx(manager->wallet, tx) > 0) {
             for (size_t i = 0; i < tx->inCount; i++) { // check that all inputs are confirmed before dropping peer
-                t = BRWalletTransactionForHash(manager->wallet, tx->inputs[i].txHash);
-                if (! t || t->blockHeight != TX_UNCONFIRMED) continue;
-                tx = NULL;
-                break;
+                if (!UInt256IsZero(tx->inputs[i].txHash)) {    // skip coinbase inputs
+                    t = BRWalletTransactionForHash(manager->wallet, tx->inputs[i].txHash);
+                    if (! t || t->blockHeight != TX_UNCONFIRMED) continue;
+                    tx = NULL;
+                    break;
+                }
             }
             
             if (tx) _BRPeerManagerPeerMisbehavin(manager, peer);

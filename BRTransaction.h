@@ -85,9 +85,22 @@ typedef struct {
 void BRTxOutputSetAddress(BRTxOutput *output, const char *address);
 void BRTxOutputSetScript(BRTxOutput *output, const uint8_t *script, size_t scriptLen);
 
+/** Dash Transaction types */
+enum {
+    TRANSACTION_NORMAL = 0,
+    TRANSACTION_PROVIDER_REGISTER = 1,
+    TRANSACTION_PROVIDER_UPDATE_SERVICE = 2,
+    TRANSACTION_PROVIDER_UPDATE_REGISTRAR = 3,
+    TRANSACTION_PROVIDER_UPDATE_REVOKE = 4,
+    TRANSACTION_COINBASE = 5,
+    TRANSACTION_QUORUM_COMMITMENT = 6,
+    TRANSACTION_NON_FINANCIAL = 7,
+};
+
 typedef struct {
     UInt256 txHash;
     uint32_t version;
+    uint32_t type;
     BRTxInput *inputs;
     size_t inCount;
     BRTxOutput *outputs;
@@ -95,6 +108,8 @@ typedef struct {
     uint32_t lockTime;
     uint32_t blockHeight;
     uint32_t timestamp; // time interval since unix epoch
+    uint8_t *extraPayload;  // support for new Dash tx types
+    size_t extraPayloadLen;
 } BRTransaction;
 
 // returns a newly allocated empty transaction that must be freed by calling BRTransactionFree()
