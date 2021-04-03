@@ -408,7 +408,6 @@ BRTransaction *BRTransactionParse(const uint8_t *buf, size_t bufLen)
     BRTxOutput *output;
     
     uint32_t n32bitVersion = (off + sizeof(uint32_t) <= bufLen) ? UInt32GetLE(&buf[off]) : 0;
-    off += sizeof(uint32_t);
     tx->version = (int16_t) (n32bitVersion & 0xffff);
     tx->type = (int16_t) ((n32bitVersion >> 16) & 0xffff);
     off += sizeof(uint32_t);

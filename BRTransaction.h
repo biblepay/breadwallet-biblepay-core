@@ -99,8 +99,8 @@ enum {
 
 typedef struct {
     UInt256 txHash;
-    uint32_t version;
-    uint32_t type;
+    uint16_t version;
+    uint16_t type;
     BRTxInput *inputs;
     size_t inCount;
     BRTxOutput *outputs;
